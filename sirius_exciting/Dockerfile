@@ -1,4 +1,4 @@
-FROM sirius_base as builder
+FROM sirius_base_60 as builder
 
 # build latest develop version of SIRIUS
 RUN spack -e sirius-env install
@@ -17,8 +17,13 @@ RUN mkdir stage-copy
 # extract the full path of the *so files (grep -o ...)
 # copy (cp --parent ...) with the directory structure into /stage-copy directory
 RUN ldd /exciting/build/mpiandsmp/exciting | grep -o '/[-a-zA-Z0-9_/\.]*\.so[\.0-9]*' | xargs -I{} cp --parent {} stage-copy
+# MKL requires special care
+RUN cp --parent $(spack find --format='{prefix}/mkl/{version}/lib/intel64/libmkl_def.so.2' intel-oneapi-mkl) stage-copy
+RUN cp --parent $(spack find --format='{prefix}/mkl/{version}/lib/intel64/libmkl_avx2.so.2' intel-oneapi-mkl) stage-copy
 
+#
 # Bare OS image to run the installed executables
+#
 FROM ubuntu:22.04
 RUN apt-get -y update
 # add helpful utilities to the slim image

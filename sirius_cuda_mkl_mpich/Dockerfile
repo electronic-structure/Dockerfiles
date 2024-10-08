@@ -11,7 +11,7 @@ ENV PATH="/spack/bin:${PATH}"
 
 ENV MPICH_VERSION=3.4.3
 
-ENV CMAKE_VERSION=3.25.2
+ENV CMAKE_VERSION=3.26.3
 
 RUN apt-get -y update
 
@@ -31,6 +31,7 @@ RUN git clone https://github.com/spack/spack.git
 
 # set the location of packages built by spack
 RUN spack config add config:install_tree:root:/opt/local
+RUN spack config add packages:all:variants:cuda_arch=${CUDA_ARCH}
 
 # find all external packages
 RUN spack external find --all
@@ -46,7 +47,7 @@ RUN spack install mpich@${MPICH_VERSION} %gcc
 RUN echo $(spack find --format='{prefix.lib}' mpich) > /etc/ld.so.conf.d/mpich.conf
 RUN ldconfig
 
-ENV SPEC="sirius@develop%gcc build_type=Release +fortran +tests +scalapack +cuda cuda_arch=${CUDA_ARCH} ^mpich@${MPICH_VERSION} ^intel-oneapi-mkl+cluster ^spla ^spfft+cuda cuda_arch=${CUDA_ARCH}"
+ENV SPEC="sirius@develop%gcc build_type=Release +fortran +elpa +tests +scalapack +cuda ^mpich@${MPICH_VERSION} ^intel-oneapi-mkl+cluster ^spla ^spfft+cuda ^elpa+cuda"
 
 # install all dependencies
 RUN spack install --only=dependencies $SPEC
